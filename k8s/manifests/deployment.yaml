@@ -20,6 +20,6 @@ spec:
     spec:
       containers:
       - name: hello-world
-        image: panuc1/hello-world:v1.0.0
+        image: panuc1/hello-world:v1.0.1
         ports:
         - containerPort: 80
