@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-world-production
+  namespace: argocd
+spec:
+  project: hello-world-project
+  source:
+    repoURL: 'https://github.com/spanozzo/HelloKubeOps.git'
+    targetRevision: main
+    path: k8s/manifests
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: hello-world
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

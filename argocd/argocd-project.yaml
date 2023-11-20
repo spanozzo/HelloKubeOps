@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: hello-world-project
+  namespace: argocd
+spec:
+  description: Hello World Project for Production and Staging
+  sourceRepos:
+    - 'https://github.com/spanozzo/HelloKubeOps.git'
+  destinations:
+    - namespace: hello-world
+      server: 'https://kubernetes.default.svc'
+    - namespace: hello-world-staging
+      server: 'https://kubernetes.default.svc'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
