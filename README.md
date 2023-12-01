@@ -21,6 +21,12 @@ This repository demonstrates an automated CI/CD pipeline using GitHub Actions fo
 
 - **Trigger:** The GitHub Actions workflow is triggered by any push to the `main` branch that modifies the Dockerfile.
 - **Function:** On each push:
+  - Calculates the new version of the container, based on the repository tag and commit messagges. If in the commit is written `major` it increments the major version and reset the minor and patch version to 0, if in the commit is written `minor` it increments the minor version and reset patch version to 0. Otherwise it increments only the patch version.
+  - Pushes the new image version to DockerHub.
+  - Updates the `deployment.yaml` with the new container version for Kubernetes deployment.
+  - Commits the updated `deployment.yaml` back to the repository.
+  - Increments the repository tag.
+- **OLD VERSION FUNCTION**
   - Calculates the new version of the container (only increments PATCH version), based on the repository tag. The job increments only the PATCH version, I assume that major version changes are done manually. 
   - Pushes the new image version to DockerHub.
   - Updates the `deployment.yaml` with the new container version for Kubernetes deployment.

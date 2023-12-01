@@ -17,22 +17,44 @@ jobs:
     - name: Calculate Version
       id: versioning
       run: |
-        # Fetch tags
-        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-        # Get latest tag
-        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-        # Default to v1.0.0 if no tag found
-        LATEST_TAG=${LATEST_TAG:-v1.0.0}
+        # Check if any tags exist
+        REMOTE_TAG_COUNT=$(git ls-remote --tags origin | wc -l)
+        if [ $REMOTE_TAG_COUNT -eq 0 ]; then
+            echo "No remote tags found in the repository. Setting default tag to v1.0.0."
+            LATEST_TAG="v1.0.0"
+        else
+            # Fetch tags
+            git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+            # Get latest tag
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        fi
+
         echo "Latest tag: $LATEST_TAG"
         # Extract version number parts
         IFS='.' read -ra VERSION_PARTS <<< "${LATEST_TAG#v}"
         MAJOR=${VERSION_PARTS[0]}
         MINOR=${VERSION_PARTS[1]}
         PATCH=${VERSION_PARTS[2]}
-        # Increment patch version
-        PATCH=$((PATCH+1))
+
+        # Analyze commit messages for version increment
+        for COMMIT in $(git rev-list $LATEST_TAG..HEAD)
+        do
+            MESSAGE=$(git log --format=%B -n 1 $COMMIT)
+            if [[ $MESSAGE == *"major"* ]]; then
+                MAJOR=$((MAJOR+1))
+                MINOR=0
+                PATCH=0
+            elif [[ $MESSAGE == *"minor"* ]]; then
+                MINOR=$((MINOR+1))
+                PATCH=0
+            else
+                PATCH=$((PATCH+1))
+            fi
+        done
+        
         NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
         echo "New version: $NEW_VERSION"
+        
         # Set the new version as an output variable
         echo "::set-output name=version::$NEW_VERSION"
 
